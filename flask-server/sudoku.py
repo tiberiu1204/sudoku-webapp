@@ -1,5 +1,6 @@
 from sudoku_ai import Solver
 from copy import deepcopy
+from random import shuffle
 
 class Sudoku:
     def __init__(self, board):
@@ -20,18 +21,40 @@ class Sudoku:
     def get_mistakes(self):
         return self._mistakes
 
-s = Sudoku([
-        [7, 8, 0, 4, 0, 0, 1, 2, 0],
-        [6, 0, 0, 0, 7, 5, 0, 0, 9],
-        [0, 0, 0, 6, 0, 1, 0, 7, 8],
-        [0, 0, 7, 0, 4, 0, 2, 6, 0],
-        [0, 0, 1, 0, 5, 0, 9, 3, 0],
-        [9, 0, 4, 0, 6, 0, 0, 0, 5],
-        [0, 7, 0, 3, 0, 0, 0, 1, 2],
-        [1, 2, 0, 0, 0, 7, 4, 0, 0],
-        [0, 4, 9, 2, 0, 6, 0, 0, 7]
-    ])
 
-while True:
-    i, j, val = (int(x) for x in input().split(" "))
-    print(s.move(i, j, val))
+
+def generate_random_board(difficulty = 2):
+    empty = 0
+    if difficulty == 0:
+        empty = 43   
+    elif difficulty == 1:
+        empty = 51
+    else:
+        empty = 56
+    board = [[0] * 9 for _ in range(9)]
+    s = Solver(board)
+    board = s.solve(rand=True, generate=True)
+    positions = []
+    for i in range(9):
+        for j in range(9):
+            positions.append((i, j))
+    board_copy = deepcopy(board)
+    while empty:
+        shuffle(positions)
+        index = 0
+        temp_empty = empty
+        while empty and index < len(positions):
+            i, j = positions[index]
+            index += 1
+            temp = board[i][j]
+            board[i][j] = 0
+            if not Solver(board).solve():
+                board[i][j] = temp
+                continue
+            empty -= 1
+        if empty:
+            empty = temp_empty
+            board = deepcopy(board_copy)
+    return board
+
+print(generate_random_board(2))

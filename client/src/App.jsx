@@ -1,24 +1,28 @@
 import React, { useState, useEffect } from 'react';
 import { Board } from './Components/Board';
 
-const SERVER = "http://localhost:5000" 
+const SERVER = "http://localhost:5000"
 
 function App() {
-  const [data, setData] = useState();
+  const [board, setBoard] = useState();
 
-  // useEffect(() => {
-  //   fetch(SERVER + "/members").then(
-  //     res => res.json()
-  //   ).then(
-  //     data => {
-  //       setData(data);
-  //       console.log(data);
-  //     }
-  //   )
-  // }, []);
+  useEffect(() => {
+    fetch(SERVER + "/board").then(
+      res => res.json()
+    ).then(
+      board => {
+        setBoard(board);
+        console.log(board);
+      }
+    )
+  }, []);
+
+  if(!board) {
+    return;
+  }
 
   return (
-    <Board />  
+    <Board board={board} setBoard={setBoard}/>  
   );
 }
 

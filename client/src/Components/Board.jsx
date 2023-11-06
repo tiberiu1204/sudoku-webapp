@@ -75,20 +75,9 @@ const Square = ({ tiles, index, selected, setSelected }) => {
 const arr = new Array(9);
 const changePermited = new Array(9);
 
-export const Board = () => {
+export const Board = ({board, setBoard}) => {
     const [selected, setSelected] = useState(0);
 
-    const [board, setBoard] = useState([
-        [7, 8, 0, 4, 0, 0, 1, 2, 0],
-        [6, 0, 0, 0, 7, 5, 0, 0, 9],
-        [0, 0, 0, 6, 0, 1, 0, 7, 8],
-        [0, 0, 7, 0, 4, 0, 2, 6, 0],
-        [0, 0, 1, 0, 5, 0, 9, 3, 0],
-        [9, 0, 4, 0, 6, 0, 0, 0, 5],
-        [0, 7, 0, 3, 0, 0, 0, 1, 2],
-        [1, 2, 0, 0, 0, 7, 4, 0, 0],
-        [0, 4, 9, 2, 0, 6, 0, 0, 7]
-    ]);
     useEffect(() => {
         let index = 0;
         for(let i = 0; i < 9; i++) {

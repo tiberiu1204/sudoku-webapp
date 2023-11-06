@@ -1,10 +1,13 @@
 import time
-
+from random import shuffle
+from copy import deepcopy
 
 class Solver:
     def __init__(self, board):
         self._board = board
         self._empty_squares = 0
+        self._solutions = 0
+        self._solution = None
         for i in range(9):
             self._empty_squares += board[i].count(0)
 
@@ -25,46 +28,41 @@ class Solver:
         return False
 
     def _print_board(self):
-        print(f"[BOARD] printing board...")
+        # print(f"[BOARD] printing board...")
         for i in range(9):
             for j in range(9):
                 print(self._board[i][j], end=" ")
             print()
 
-    def _backtracking(self):
+    def _backtracking(self, rand=False, generate=False):
         empty_square = self._find_empty()
         if not empty_square:
+            self._solution = deepcopy(self._board)
             return True
         i, j = empty_square
-        for val in range(1, 10):
+        arr = list(range(1, 10))
+        shuffle(arr) if rand else arr
+        for val in arr:
+            if self._solutions > 1:
+                return False
             if self._move_is_valid(i, j, val):
                 self._board[i][j] = val
-                if self._backtracking():
-                    return True
+                if self._backtracking(rand, generate):
+                    if generate:
+                        self._solutions = 1
+                        return True
+                    self._solutions += 1
             self._board[i][j] = 0
         return False
 
-    def solve(self):
+    def solve(self, rand=False, generate=False):
         # print(f"[SOLVING] solving for {self._empty_squares} empty squares...")
         t = time.perf_counter()
-        if self._backtracking():
+        self._backtracking(rand, generate)
+        if self._solutions == 1:
             # print(f"[SOLVED] solution found in {round(time.perf_counter() - t, 4)} seconds")
             # self._print_board()
-            return self._board
+            return self._solution
         # print(f"[NO VALID SOLUTION] no valid solution was found")
         return False
     
-
-
-s = Solver([
-        [7, 8, 0, 4, 0, 0, 1, 2, 0],
-        [6, 0, 0, 0, 7, 5, 0, 0, 9],
-        [0, 0, 0, 6, 0, 1, 0, 7, 8],
-        [0, 0, 7, 0, 4, 0, 2, 6, 0],
-        [0, 0, 1, 0, 5, 0, 9, 3, 0],
-        [9, 0, 4, 0, 6, 0, 0, 0, 5],
-        [0, 7, 0, 3, 0, 0, 0, 1, 2],
-        [1, 2, 0, 0, 0, 7, 4, 0, 0],
-        [0, 4, 9, 2, 0, 6, 0, 0, 7]
-    ])
-s.solve()

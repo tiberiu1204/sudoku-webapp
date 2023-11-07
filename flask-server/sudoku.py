@@ -1,12 +1,14 @@
 from sudoku_ai import Solver
 from copy import deepcopy
 from random import shuffle
+from time import time
+from threading import Thread
 
 class Sudoku:
-    def __init__(self, board):
-        self._board = board
+    def __init__(self):
+        self._board = generate_random_board()
         self._mistakes = 0
-        self._solved_board = Solver(deepcopy(board)).solve()
+        self._solved_board = Solver(deepcopy(self._board)).solve()
 
     def move(self, row, col, val):
         if self._solved_board[row][col] == val and self._board[row][col] == 0:
@@ -22,8 +24,21 @@ class Sudoku:
         return self._mistakes
 
 
+def generate_valid_board():
+    board = [[0] * 9 for _ in range(9)]
+    s = Solver(board)
+    board = s.solve(rand=True, generate=True)
+    return board
 
-def generate_random_board(difficulty = 2):
+
+def get_positions_list():
+    positions = []
+    for i in range(9):
+        for j in range(9):
+            positions.append((i, j))
+    return positions
+
+def generate_random_board(difficulty = 0):
     empty = 0
     if difficulty == 0:
         empty = 43   
@@ -31,14 +46,9 @@ def generate_random_board(difficulty = 2):
         empty = 51
     else:
         empty = 56
-    board = [[0] * 9 for _ in range(9)]
-    s = Solver(board)
-    board = s.solve(rand=True, generate=True)
-    positions = []
-    for i in range(9):
-        for j in range(9):
-            positions.append((i, j))
-    board_copy = deepcopy(board)
+    board = generate_valid_board()
+    positions = get_positions_list()
+    board_copy = deepcopy(board)    
     while empty:
         shuffle(positions)
         index = 0
@@ -57,4 +67,4 @@ def generate_random_board(difficulty = 2):
             board = deepcopy(board_copy)
     return board
 
-print(generate_random_board(2))
+print(generate_random_board(1))

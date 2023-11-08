@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import "./Board.css"
 
+const SERVER = "http://localhost:5000"
+
 function getRow(index) {
     return Math.floor((index - 1) / 27) * 3 + Math.floor((index - 1) % 9 / 3) + 1;
 }
@@ -25,7 +27,7 @@ function boardToRenderBoard(board) {
     return renderBoard;
 }
 
-const Tile = ({ index, selected, setSelected, value }) => {
+const Tile = ({ index, selected, setSelected, value, isWrong = false }) => {
 
     function handleHighlight() {
         let square = getSquare(index);
@@ -34,13 +36,23 @@ const Tile = ({ index, selected, setSelected, value }) => {
         if(index === selected.index) {
             return "sudoku-selected-strong";
         }
-        if(value === selected.value && value) {
+        if(Math.abs(value) === Math.abs(selected.value) && value) {
             return "sudoku-selected-value";
         }
         if(square === getSquare(selected.index) || row === getRow(selected.index) || col === getCol(selected.index)) {
             return "sudoku-selected";
         }
         return "";
+    }
+
+    function displayValue() {
+        if(value === 0) {
+            return "";
+        }
+        if(value < 0) {
+            return -value;
+        }
+        return value;
     }
 
     return (
@@ -50,7 +62,7 @@ const Tile = ({ index, selected, setSelected, value }) => {
             setSelected({index: index, value: value});
         }}
         >
-        <div className='sudoku-tile-value'>{value ? value : ""}</div>
+        <div className={`sudoku-tile-value ${value < 0 ? "sudoku-wrong" : ""}`}>{displayValue()}</div>
     </div>
   )
 }
@@ -77,6 +89,7 @@ const changePermited = new Array(9);
 
 export const Board = ({board, setBoard}) => {
     const [selected, setSelected] = useState(0);
+    const [move, setMove] = useState(0);
 
     useEffect(() => {
         let index = 0;
@@ -93,51 +106,72 @@ export const Board = ({board, setBoard}) => {
         }
     }, []);
 
+    useEffect(() => {
+        if(move === 0) {
+            return;
+        }
+        const [row, col, value, moveIsValid] = move;
+        if(!moveIsValid) {
+            board[row][col] = -value;
+        } else {
+            board[row][col] = value
+        }
+        setSelected({ index: selected.index, value: value });
+        setBoard(structuredClone(board));
+    }, [move]);
+
     const handleKeyPress = e => {
+        if(e.key === "\\") return;
         const { index } = selected;
-        let row, col;
+        let row = getRow(index) - 1, col = getCol(index) - 1;
         if(!selected) return;
         switch(e.key) {
             case "ArrowUp":
-                row = getRow(index) - 2;
-                col = getCol(index) - 1;
-                if(row >= 0) {
-                    setSelected({index: arr[row][col] + 1, value: board[row][col]});
+                if(row - 1 >= 0) {
+                    setSelected({index: arr[row - 1][col] + 1, value: board[row-1][col]});
                 }
                 break;
             case "ArrowRight":
-                row = getRow(index) - 1;
-                col = getCol(index);
-                if(col <= 8) {
-                    setSelected({index: arr[row][col] + 1, value: board[row][col]});
+                if(col + 1 < 9) {
+                    setSelected({index: arr[row][col + 1] + 1, value: board[row][col+1]});
                 }
                 break;
             case "ArrowDown":
-                row = getRow(index);
-                col = getCol(index) - 1;
-                if(row <= 8) {
-                    setSelected({index: arr[row][col] + 1, value: board[row][col]});
+                if(row + 1 < 9) {
+                    setSelected({index: arr[row + 1][col] + 1, value: board[row+1][col]});
                 }
                 break;
             case "ArrowLeft":
-                row = getRow(index) - 1;
-                col = getCol(index) - 2;
-                if(col >= 0) {
-                    setSelected({index: arr[row][col] + 1, value: board[row][col]});
+                if(col - 1 >= 0) {
+                    setSelected({index: arr[row][col - 1] + 1, value: board[row][col-1]});
                 }
+                break;
+            case "Delete":
+            case "Backspace":
+                if(!changePermited[row][col]) return;
+                board[row][col] = 0;
+                setBoard(structuredClone(board));
+                setSelected({index: index, value: 0})
                 break;
             default:
                 break;
         }
         if("0123456789".search(e.key) !== -1) {
-            let boardClone = structuredClone(board);
             const [row, col] = [getRow(selected.index) - 1, getCol(selected.index) - 1]; 
             if(!changePermited[row][col]) {
                 return;
             }
-            boardClone[row][col] = e.key;
-            setBoard(boardClone)
-            setSelected({index: selected.index, value: Number(e.key)});
+            fetch(SERVER + "/validate", {
+                method: "POST",
+                body: JSON.stringify([row, col, Number(e.key)])
+            }).then(
+                    res => res.json()
+                ).then(
+                    moveIsValid => {
+                        setMove([row, col, Number(e.key), moveIsValid])
+                        return;
+                    }
+                );
         }
     }
 

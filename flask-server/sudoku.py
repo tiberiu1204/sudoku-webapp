@@ -6,22 +6,35 @@ from threading import Thread
 
 class Sudoku:
     def __init__(self):
-        self._board = generate_random_board()
+        self._board = None
         self._mistakes = 0
-        self._solved_board = Solver(deepcopy(self._board)).solve()
+        self._solved_board = None
 
-    def move(self, row, col, val):
-        if self._solved_board[row][col] == val and self._board[row][col] == 0:
-            self._board[row][col] = val
+    def validate_move(self, row, col, val):
+        if not self._board:
+            return None
+        if self._solved_board[row][col] == val:
             return True
         self._mistakes += 1
         return False
 
     def get_board(self):
+        if not self._board:
+            return None
         return deepcopy(self._board)
     
     def get_mistakes(self):
+        if not self._board:
+            return None
         return self._mistakes
+    
+    def generate_game_board(self, difficulty):
+        print("[BEGGIN] generating game board...")
+        self._board = generate_random_board(difficulty)
+        print("[SUCCESS] game board generated")
+        Solver(deepcopy(self._board)).solve()
+        print("[SOLVED] game board is solved")
+        return self._board
 
 
 def generate_valid_board():
@@ -66,5 +79,3 @@ def generate_random_board(difficulty = 0):
             empty = temp_empty
             board = deepcopy(board_copy)
     return board
-
-print(generate_random_board(1))

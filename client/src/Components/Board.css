@@ -40,6 +40,10 @@
     background-color: rgb(145, 175, 202);
 }
 
+.sudoku-wrong {
+    color: red;
+}
+
 .sudoku-tile-value {
     font-family: sans-serif;
     font-size: 40px;

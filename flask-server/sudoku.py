@@ -34,6 +34,7 @@ class Sudoku:
         print("[SUCCESS] game board generated")
         Solver(deepcopy(self._board)).solve()
         print("[SOLVED] game board is solved")
+        self._solved_board = Solver(deepcopy(self._board)).solve()
         return self._board
 
 

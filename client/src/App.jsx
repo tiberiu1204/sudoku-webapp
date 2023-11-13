@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { Board } from './Components/Board';
+import React, { useState, useEffect } from "react";
+import { Board } from "./Components/Board";
+import "./App.css";
 
-const SERVER = "http://localhost:5000"
+const SERVER = "http://localhost:5000";
 
 function App() {
   const [board, setBoard] = useState();
@@ -11,23 +12,26 @@ function App() {
   useEffect(() => {
     fetch(SERVER + "/board", {
       method: "POST",
-      body: JSON.stringify(DIFFICULTY)
-    }).then(
-      res => res.json()
-    ).then(
-      board => {
+      body: JSON.stringify(DIFFICULTY),
+    })
+      .then((res) => res.json())
+      .then((board) => {
         setBoard(board);
-      }
-    )
+      });
   }, []);
 
-  if(!board) {
-    return <h1>Generating game board. This might take a minute, depending 
-              a difficulty level. All the puzzles are generated on site and have unique solutions.</h1>;
+  if (!board) {
+    return (
+      <div className="loading-wrapper">
+        <h1 className="loading">Generating game board...</h1>
+      </div>
+    );
   }
 
   return (
-    <Board board={board} setBoard={setBoard}/>  
+    <div className="app-wrapper">
+      <Board board={board} setBoard={setBoard} />
+    </div>
   );
 }
 
